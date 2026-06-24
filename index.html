@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuantAI Sniper — Algorithmic Crypto Futures Analysis</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { background-color: #121212; font-family: 'Inter', system-ui, sans-serif; }
+  .glow-yellow { box-shadow: 0 0 25px rgba(252,213,53,0.35); }
+  .dash-border {
+    border: 2px dashed #3a3a3a;
+    transition: all 0.25s ease;
+  }
+  .dash-border:hover, .dash-border.dragover {
+    border-color: #FCD535;
+    background-color: rgba(252,213,53,0.04);
+  }
+  select.tf-select {
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%23FCD535' stroke-width='2' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+    background-size: 1rem;
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .blinking { animation: blink 1.1s infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    width: 56px; height: 56px;
+    border: 4px solid #2a2a2a;
+    border-top-color: #FCD535;
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  .blur-result {
+    filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    user-select: none;
+    pointer-events: none;
+  }
+  .terminal-font { font-family: 'Courier New', monospace; }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
+  .fade-in { animation: fadeIn 0.4s ease; }
+  @keyframes modalPop { from { opacity:0; transform: scale(0.92); } to { opacity:1; transform: scale(1); } }
+  .modal-pop { animation: modalPop 0.3s ease; }
+</style>
+</head>
+<body class="text-gray-200 min-h-screen">
+
+<!-- HEADER -->
+<header class="border-b border-[#222] bg-black/40 backdrop-blur sticky top-0 z-40">
+  <div class="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <span class="text-2xl font-extrabold text-white">Quant<span class="text-[#FCD535]">AI</span></span>
+      <span class="text-sm font-semibold text-gray-400 tracking-widest uppercase hidden sm:inline">Sniper</span>
+    </div>
+    <button class="bg-[#FCD535] text-black font-bold text-sm sm:text-base px-4 sm:px-5 py-2 rounded-lg hover:brightness-110 transition glow-yellow">
+      Buy Credits
+    </button>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="max-w-4xl mx-auto px-5 pt-16 pb-10 text-center">
+  <div class="inline-flex items-center gap-2 bg-[#1c1c1c] border border-[#2a2a2a] rounded-full px-4 py-1 mb-6 text-xs text-[#FCD535] font-semibold tracking-wide">
+    ⚡ AI-Powered Chart Analysis
+  </div>
+  <h1 class="text-4xl sm:text-6xl font-extrabold text-white leading-tight tracking-tight">
+    Trade Crypto Futures with <span class="text-[#FCD535]">Algorithmic Precision.</span>
+  </h1>
+  <p class="mt-6 text-lg text-gray-400 max-w-2xl mx-auto">
+    Upload your chart. Let our AI spot the liquidity traps and order blocks before you click <span class="text-[#39FF8C] font-semibold">Long</span> or <span class="text-[#FF3B3B] font-semibold">Short</span>.
+  </p>
+</section>
+
+<!-- MAIN ACTION AREA -->
+<section class="max-w-3xl mx-auto px-5 pb-24 relative">
+
+  <!-- Upload Box -->
+  <div id="uploadBox">
+    <div class="mb-5">
+      <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Timeframe</label>
+      <select id="timeframeSelect" class="tf-select w-full bg-[#1c1c1c] border border-[#2a2a2a] text-white font-semibold rounded-xl px-4 py-3 focus:outline-none focus:border-[#FCD535] transition">
+        <option value="1m">1m</option>
+        <option value="5m">5m</option>
+        <option value="15m" selected>15m</option>
+        <option value="1H">1H</option>
+        <option value="4H">4H</option>
+      </select>
+    </div>
+
+    <div id="dropZone" class="dash-border rounded-2xl bg-[#161616] p-10 sm:p-16 text-center cursor-pointer">
+      <input type="file" id="fileInput" accept="image/*" class="hidden">
+      <svg class="w-16 h-16 mx-auto text-[#FCD535] mb-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 7.5L12 3m0 0L7.5 7.5M12 3v13.5"/>
+      </svg>
+      <p class="text-white font-semibold text-lg">Drop your chart screenshot here</p>
+      <p class="text-gray-500 text-sm mt-1">or click to browse — PNG, JPG up to 10MB</p>
+      <p id="creditsLabel" class="mt-5 inline-block text-xs font-bold text-[#FCD535] bg-[#FCD535]/10 px-3 py-1 rounded-full">2 free credits remaining</p>
+    </div>
+  </div>
+
+  <!-- Scanning State -->
+  <div id="scanningBox" class="hidden rounded-2xl bg-[#161616] border border-[#2a2a2a] p-10 sm:p-16 text-center">
+    <div class="spinner mx-auto mb-6"></div>
+    <p id="scanText" class="text-[#FCD535] font-bold terminal-font text-lg blinking">Scanning for Order Blocks...</p>
+  </div>
+
+  <!-- Error State -->
+  <div id="errorBox" class="hidden rounded-2xl bg-[#161616] border border-[#FF3B3B]/40 p-8 text-center">
+    <p class="text-[#FF3B3B] font-bold mb-4">⚠ Analysis failed. The backend returned an error.</p>
+    <button id="retryBtn" class="text-sm text-gray-400 hover:text-white underline">Try again</button>
+  </div>
+
+  <!-- Result Card -->
+  <div id="resultWrap" class="hidden relative">
+    <div id="resultCard" class="fade-in rounded-2xl bg-[#0d0d0d] border border-[#2a2a2a] p-6 sm:p-8 terminal-font text-sm sm:text-base shadow-2xl">
+      <div class="flex items-center justify-between mb-4 border-b border-[#2a2a2a] pb-3">
+        <span class="text-gray-500 text-xs">// quantai_sniper_v2.exe — analysis_output</span>
+        <span class="flex gap-1.5">
+          <span class="w-3 h-3 rounded-full bg-[#FF3B3B]"></span>
+          <span class="w-3 h-3 rounded-full bg-[#FCD535]"></span>
+          <span class="w-3 h-3 rounded-full bg-[#39FF8C]"></span>
+        </span>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <p class="text-[#FCD535] font-bold">&gt; MARKET_CONTEXT</p>
+          <p id="outMarketContext" class="text-gray-300 mt-1"></p>
+        </div>
+        <div>
+          <p class="text-[#FCD535] font-bold">&gt; TECHNICAL_TRIGGERS</p>
+          <ul id="outTriggers" class="text-gray-300 mt-1 list-disc list-inside space-y-1"></ul>
+        </div>
+        <div>
+          <p class="text-[#FCD535] font-bold">&gt; VERDICT</p>
+          <p id="outVerdict" class="font-extrabold text-lg"></p>
+        </div>
+        <div class="flex flex-wrap gap-6 pt-2">
+          <div>
+            <p class="text-gray-500 text-xs">CONFLUENCE SCORE</p>
+            <p id="outConfluence" class="text-[#39FF8C] font-extrabold text-2xl"></p>
+          </div>
+          <div>
+            <p class="text-gray-500 text-xs">RISK FACTOR</p>
+            <p id="outRisk" class="text-[#FCD535] font-extrabold text-2xl"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button id="resetBtn" class="mt-4 w-full text-center text-sm text-gray-500 hover:text-gray-300 transition">
+      ↻ Analyze another chart
+    </button>
+  </div>
+
+</section>
+
+<!-- PAYWALL MODAL -->
+<div id="paywallModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center px-5">
+  <div class="modal-pop bg-[#161616] border border-[#FCD535]/40 rounded-2xl p-8 max-w-md w-full text-center glow-yellow">
+    <div class="text-5xl mb-4">🚨</div>
+    <h2 class="text-2xl font-extrabold text-white mb-2">Free Credits Exhausted</h2>
+    <p class="text-gray-400 mb-6">The market waits for no one. Unlock unlimited AI analysis for <span class="text-[#FCD535] font-bold">$19.90</span>.</p>
+    <button class="w-full bg-[#FCD535] text-black font-extrabold text-lg py-3.5 rounded-xl hover:brightness-110 transition glow-yellow mb-3">
+      Unlock Now (Stripe)
+    </button>
+    <button id="dismissModal" class="text-gray-500 hover:text-gray-300 text-sm transition">Maybe later</button>
+  </div>
+</div>
+
+<footer class="text-center text-gray-600 text-xs py-10">
+  QuantAI Sniper does not provide financial advice. Trade at your own risk.
+</footer>
+
+<script>
+  const FREE_LIMIT = 2;
+  const STORAGE_KEY = 'quantai_sniper_credits_used';
+
+  function getCreditsUsed() {
+    return parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
+  }
+  function setCreditsUsed(n) {
+    localStorage.setItem(STORAGE_KEY, String(n));
+  }
+
+  const uploadBox = document.getElementById('uploadBox');
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  const timeframeSelect = document.getElementById('timeframeSelect');
+  const scanningBox = document.getElementById('scanningBox');
+  const scanText = document.getElementById('scanText');
+  const errorBox = document.getElementById('errorBox');
+  const retryBtn = document.getElementById('retryBtn');
+  const resultWrap = document.getElementById('resultWrap');
+  const resultCard = document.getElementById('resultCard');
+  const paywallModal = document.getElementById('paywallModal');
+  const creditsLabel = document.getElementById('creditsLabel');
+  const resetBtn = document.getElementById('resetBtn');
+  const dismissModal = document.getElementById('dismissModal');
+
+  function updateCreditsLabel() {
+    const remaining = Math.max(FREE_LIMIT - getCreditsUsed(), 0);
+    creditsLabel.textContent = remaining > 0
+      ? `${remaining} free credit${remaining === 1 ? '' : 's'} remaining`
+      : 'No free credits remaining';
+  }
+  updateCreditsLabel();
+
+  dropZone.addEventListener('click', () => fileInput.click());
+
+  ['dragover', 'dragenter'].forEach(evt =>
+    dropZone.addEventListener(evt, e => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    })
+  );
+  ['dragleave', 'drop'].forEach(evt =>
+    dropZone.addEventListener(evt, e => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+    })
+  );
+  dropZone.addEventListener('drop', e => {
+    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length) handleFile(fileInput.files[0]);
+  });
+
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handleFile(file) {
+    uploadBox.classList.add('hidden');
+    errorBox.classList.add('hidden');
+    resultWrap.classList.add('hidden');
+    paywallModal.classList.add('hidden');
+    scanningBox.classList.remove('hidden');
+
+    const messages = ["Scanning for Order Blocks...", "Analyzing Liquidity Pools..."];
+    let i = 0;
+    scanText.textContent = messages[0];
+    const interval = setInterval(() => {
+      i = (i + 1) % messages.length;
+      scanText.textContent = messages[i];
+    }, 1500);
+
+    try {
+      const base64Image = await fileToBase64(file);
+      const timeframe = timeframeSelect.value;
+
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imagem: base64Image, timeframe: timeframe })
+      });
+
+      if (!response.ok) throw new Error('Request failed with status ' + response.status);
+      const data = await response.json();
+
+      clearInterval(interval);
+      scanningBox.classList.add('hidden');
+      renderResult(data);
+    } catch (err) {
+      clearInterval(interval);
+      scanningBox.classList.add('hidden');
+      errorBox.classList.remove('hidden');
+      console.error('Analysis error:', err);
+    }
+  }
+
+  function renderResult(data) {
+    document.getElementById('outMarketContext').textContent = data.marketContext || 'N/A';
+    const triggersList = document.getElementById('outTriggers');
+    triggersList.innerHTML = '';
+    (data.technicalTriggers || []).forEach(t => {
+      const li = document.createElement('li');
+      li.textContent = t;
+      triggersList.appendChild(li);
+    });
+
+    const verdictEl = document.getElementById('outVerdict');
+    verdictEl.textContent = data.verdict || 'N/A';
+    verdictEl.className = 'font-extrabold text-lg ' +
+      ((data.verdict || '').toUpperCase().includes('SHORT') ? 'text-[#FF3B3B]' :
+       (data.verdict || '').toUpperCase().includes('LONG') ? 'text-[#39FF8C]' : 'text-gray-300');
+
+    document.getElementById('outConfluence').textContent = data.confluenceScore || 'N/A';
+    document.getElementById('outRisk').textContent = data.riskFactor || 'N/A';
+
+    const creditsUsed = getCreditsUsed() + 1;
+    setCreditsUsed(creditsUsed);
+    updateCreditsLabel();
+
+    resultWrap.classList.remove('hidden');
+
+    if (creditsUsed > FREE_LIMIT) {
+      resultCard.classList.add('blur-result');
+      paywallModal.classList.remove('hidden');
+    } else {
+      resultCard.classList.remove('blur-result');
+      paywallModal.classList.add('hidden');
+    }
+  }
+
+  retryBtn.addEventListener('click', () => {
+    errorBox.classList.add('hidden');
+    uploadBox.classList.remove('hidden');
+  });
+
+  resetBtn.addEventListener('click', () => {
+    resultWrap.classList.add('hidden');
+    paywallModal.classList.add('hidden');
+    fileInput.value = '';
+    uploadBox.classList.remove('hidden');
+  });
+
+  dismissModal.addEventListener('click', () => {
+    paywallModal.classList.add('hidden');
+  });
+</script>
+
+</body>
+</html>
